@@ -20,7 +20,7 @@ func NewSkillRepository(db *gorm.DB) SkillRepository {
 	return &skillRepository{db: db}
 }
 
-func (r* skillRepository) FindAll(userId string) ([]models.Skill, error) {
+func (r *skillRepository) FindAll(userId string) ([]models.Skill, error) {
 	var skills []models.Skill
 
 	query := r.db.Model(&models.Skill{}).Order("created_at desc")
