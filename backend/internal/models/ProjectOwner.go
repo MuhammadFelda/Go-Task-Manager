@@ -1,15 +1,13 @@
 package models
 
-import "time"
+import "gorm.io/gorm"
 
 type ProjectOwner struct {
-	Id			uint		`json:"id"`
-	Name		string		`json:"name"`
-	Creator		uint		`json:"creator"`
+	gorm.Model
+	Name		string		`gorm:"not null" json:"name"`
+	Creator		uint		`gorm:"not null" default:"false" json:"creator"`
 	Updater		uint		`json:"updater"`
 	IsDeleted	bool		`json:"is_deleted"`
-	CreatedAt	time.Time	`json:"created_at"`
-	UpdatedAt	time.Time	`json:"updated_at"`
 
-	Project		[]Project	`json:"project,omitempty"`
+	Project		[]Project	`gorm:"foreignKey:ProjectOwnerId" json:"projects,omitempty"`
 }

@@ -1,19 +1,17 @@
 package models
 
-import "time"
+import "gorm.io/gorm"
 
 type User struct {
-	Id				uint		`json:"id"`
-	Name			string		`json:"name"`
-	Email			string		`json:"email"`
-	Role			string		`json:"role"`
-	Password		string		`json:"password"`
+	gorm.Model
+	Name			string		`gorm:"not null" json:"name"`
+	Email			string		`gorm:"uniqueIndex;not null" json:"email"`
+	Password		string		`gorm:"not null" json:"-"`	// Hide password from all json response
+	Role			string		`gorm:"not null;default:'programmer'" json:"role"`
 	Avatar			string		`json:"avatar"`
-	FaceEmbedding	float64		`json:"face_embedding,omitempty"`
-	CreatedAt		time.Time	`json:"created_at"`
-	UpdatedAt		time.Time	`json:"updated_at"`
+	FaceEmbedding	float64		`grom:"type:jsonb;serializer:json" json:"face_embedding,omitempty"`
 
-	Skills		[]Skill		`json:"skills,omitempty"`
-	Logtimes	[]Logtime	`json:"logtimes,omitempty"`
-	Logs		[]Log		`json:"logs,omitempty"`
+	Skills			[]Skill		`gorm:"foreignKey:UserId" json:"skills,omitempty"`
+	Logtimes		[]Logtime	`gorm:"foreignKey:UserId" json:"logtimes,omitempty"`
+	Logs			[]Log		`gorm:"foreignKey:UserId" json:"logs,omitempty"`
 }

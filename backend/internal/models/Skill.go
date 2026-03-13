@@ -1,13 +1,13 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+)
 
 type Skill struct {
-	Id			uint		`json:"id"`
-	UserId		uint		`json:"user_id"`
-	Name		string		`json:"skill"`
-	CreatedAt	time.Time	`json:"created_at"`
-	UpdatedAt	time.Time	`json:"updated_at"`
+	gorm.Model
+	UserId		uint		`gorm:"not null" json:"user_id"`
+	Name		string		`gorm:"not null" json:"skill"`
 
-	User *User `json:"user,omitempty"`
+	User *User `gorm:"foreignKey:UserId" json:"users,omitempty"`
 }
