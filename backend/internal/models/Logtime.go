@@ -1,17 +1,19 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type Logtime struct {
-	Id			uint		`json:"id"`
-	UserId		uint		`json:"user_id"`
-	TaskId		uint		`json:"task_id"`
-	Date		time.Time	`json:"date"`
-	TimeUsed	float64		`json:"time_used"`
+	gorm.Model
+	UserId		uint		`gorm:"not null" json:"user_id"`
+	TaskId		uint		`gorm:"not null" json:"task_id"`
+	Date		time.Time	`gorm:"not null" json:"date"`
+	TimeUsed	float64		`gorm:"not null" json:"time_used"`
 	Description	string		`json:"description"`
-	CreatedAt	time.Time	`json:"created_at"`
-	UpdatedAt	time.Time	`json:"updated_at"`
 
-	User	*User	`json:"user,omitempty"`
-	Task	*Task	`json:"task,omitempty"`	
+	User	*User	`gorm:"foreignKet:UserId" json:"user,omitempty"`
+	Task	*Task	`gorm:"foreignKet:TaskId" json:"task,omitempty"`
 }
