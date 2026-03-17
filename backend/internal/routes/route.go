@@ -15,12 +15,10 @@ func Register(
 	api := r.Group("/api")
 
 	api.GET("/logtimes", logtimeCtrl.Index)
-	api.GET("/logtimes/:id", logtimeCtrl.Show)
 	api.POST("/logtimes", logtimeCtrl.Create)
 	api.DELETE("/logtimes/:id", logtimeCtrl.Delete)
 
 	api.GET("/skills", skillCtrl.Index)
-	api.GET("/skills/:id", skillCtrl.Show)
 	api.POST("/skills", skillCtrl.Create)
 	api.DELETE("/skills/:id", skillCtrl.Delete)
 
