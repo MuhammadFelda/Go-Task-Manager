@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 
@@ -12,22 +13,25 @@ type ProjectOwnerController struct {
 	service *services.ProjectOwnerService
 }
 
-func NewProjectOwnerController() *ProjectOwnerController {
-	return &ProjectOwnerController{
-		service: services.NewProjectOwnerService(),
-	}
+func NewProjectOwnerController(service *services.ProjectOwnerService) *ProjectOwnerController {
+	return &ProjectOwnerController{service: service}
 }
 
 func (ctrl *ProjectOwnerController) Index(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	projectOwners, err := ctrl.service.GetAll(page)
+	projectOwners, total, err := ctrl.service.GetAll(page)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": projectOwners})
+	c.JSON(http.StatusOK, gin.H{
+		"data": 		projectOwners,
+		"total":		total,
+		"current_page":	page,
+		"last_page": 	math.Ceil(float64(page) / 10),
+	})
 }
 
 func (ctrl *ProjectOwnerController) Create(c *gin.Context) {
