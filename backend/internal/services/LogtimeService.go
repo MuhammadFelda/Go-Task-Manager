@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/MuhammadFelda/task-manager/internal/models"
+	"github.com/MuhammadFelda/task-manager/internal/repository"
 )
 
 type LogtimeCreateRequest struct {
@@ -15,32 +16,20 @@ type LogtimeCreateRequest struct {
 	Description string  `json:"description" binding:"required"`
 }
 
-// DUMMY DATA
-var logtimes = []models.Logtime{
-	{Id: 1, UserId: 1, TaskId: 1, Date: time.Now(), TimeUsed: 3.5, Description: "fix login bug"},
-	{Id: 2, UserId: 1, TaskId: 2, Date: time.Now(), TimeUsed: 2.0, Description: "code review"},
+type LogtimeService struct{
+	repo repository.LogtimeRepository
 }
 
-var logtimeNextId = 4
-
-type LogtimeService struct{}
-
-func NewLogtimeService() *LogtimeService {
-	return &LogtimeService{}
+func NewLogtimeService(repo repository.LogtimeRepository) *LogtimeService {
+	return &LogtimeService{repo: repo}
 }
 
-func (s *LogtimeService) GetAll(userId string, from string, to string, page int) ([]models.Logtime, error) {
-	return logtimes, nil
+func (s *LogtimeService) GetAll(userId string, from string, to string, page int) ([]models.Logtime, int64, error) {
+	return s.repo.FindAll(userId, from, to, page)
 }
 
 func (s *LogtimeService) GetById(id uint) (*models.Logtime, error) {
-	for _, logtime := range logtimes {
-		if logtime.Id == id {
-			return &logtime, nil
-		}
-	}
-
-	return nil, errors.New("Logtimes Not Found")
+	return s.repo.FindById(id)
 }
 
 func (s *LogtimeService) Create(req LogtimeCreateRequest) (*models.Logtime, error) {
@@ -54,8 +43,7 @@ func (s *LogtimeService) Create(req LogtimeCreateRequest) (*models.Logtime, erro
 		timeUsed = 1
 	}
 
-	logtime := models.Logtime{
-		Id: uint(logtimeNextId),
+	logtime := &models.Logtime{
 		UserId: req.UserID,
 		TaskId: req.TaskId,
 		Date: date,
@@ -63,19 +51,17 @@ func (s *LogtimeService) Create(req LogtimeCreateRequest) (*models.Logtime, erro
 		Description: req.Description,
 	}
 
-	logtimes = append(logtimes, logtime)
-	logtimeNextId++
+	if err := s.repo.Create(logtime); err != nil {
+		return nil, err
+	}
 
-	return &logtime, nil
+	return logtime, nil
 }
 
 func (s *LogtimeService) Delete(id uint) error {
-	for i, logtime := range logtimes {
-		if logtime.Id == id {
-			logtimes = append(logtimes[:i], logtimes[i+1:]...)
-			return nil
-		}
+	if _, err := s.repo.FindById(id); err != nil {
+		return errors.New("Logtime Not Found")
 	}
 
-	return errors.New("Logtime Not Found")
+	return s.repo.Delete(id)
 }
