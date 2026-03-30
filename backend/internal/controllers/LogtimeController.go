@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 
@@ -12,19 +13,17 @@ type LogtimeController struct {
 	service *services.LogtimeService
 }
 
-func NewLogtimeController() *LogtimeController {
-	return &LogtimeController{
-		service: services.NewLogtimeService(),
-	}
+func NewLogtimeController(service *services.LogtimeService) *LogtimeController {
+	return &LogtimeController{service: service}
 }
 
 func (ctrl *LogtimeController) Index(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 
-	logtimes, err := ctrl.service.GetAll(
+	logtimes, total, err := ctrl.service.GetAll(
 		c.Query("user_id"),
 		c.Query("from"),
-		c.Query("tp"),
+		c.Query("to"),
 		page,
 	)
 
@@ -32,7 +31,12 @@ func (ctrl *LogtimeController) Index(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": logtimes})
+	c.JSON(http.StatusOK, gin.H{
+		"data":			logtimes,
+		"total":		total,
+		"current_page":	page,
+		"last_page":	math.Ceil(float64(page) / 10),
+	})
 }
 
 func (ctrl *LogtimeController) Show(c *gin.Context) {

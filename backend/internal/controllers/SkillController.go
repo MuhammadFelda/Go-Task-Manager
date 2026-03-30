@@ -12,10 +12,8 @@ type SkillController struct {
 	service *services.SkillService
 }
 
-func NewSkillController() *SkillController {
-	return &SkillController{
-		service: services.NewSkillService(),
-	}
+func NewSkillController(service *services.SkillService) *SkillController {
+	return &SkillController{service: service}
 }
 
 func (ctrl *SkillController) Index(c *gin.Context) {
@@ -26,22 +24,6 @@ func (ctrl *SkillController) Index(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": skills})
-}
-
-func (ctrl *SkillController) Show(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Id"})
-		return
-	}
-
-	skill, err := ctrl.service.GetById(uint(id))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Skill Not Found"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"data": skill})
 }
 
 func (ctrl *SkillController) Create(c *gin.Context) {

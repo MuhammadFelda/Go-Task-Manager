@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/MuhammadFelda/task-manager/internal/models"
+	"github.com/MuhammadFelda/task-manager/internal/repository"
 )
 
 type ProjectOwnerRequest struct {
@@ -16,64 +17,53 @@ type ProjectOwnerRequestUpdate struct {
 	Updater		uint		`json:"updater"`
 }
 
-var projectOwners = []models.ProjectOwner{
-	{Id: 1, Name: "KNDI", Creator: 1, Updater: 1, IsDeleted: false},
-	{Id: 2, Name: "KD", Creator: 1, Updater: 1, IsDeleted: false},
-	{Id: 3, Name: "External", Creator: 1, Updater: 1, IsDeleted: false},
+type ProjectOwnerService struct {
+	repo repository.ProjectOwnerRepository
 }
 
-var nextProjectownerId uint = 4
-
-type ProjectOwnerService struct {}
-
-func NewProjectOwnerService() *ProjectOwnerService {
-	return &ProjectOwnerService{}
+func NewProjectOwnerService(repo repository.ProjectOwnerRepository) *ProjectOwnerService {
+	return &ProjectOwnerService{repo: repo}
 }
 
-func (s *ProjectOwnerService) GetAll(page int) ([]models.ProjectOwner, error) {
-	active := []models.ProjectOwner{}
-	for _, projectOwner := range projectOwners{
-		if !projectOwner.IsDeleted {
-			active = append(active, projectOwner)
-		}
-	}
-	return active, nil
+func (s *ProjectOwnerService) GetAll(page int) ([]models.ProjectOwner,int64, error) {
+	return s.repo.FindAll(page)
 }
 
 func (s *ProjectOwnerService) Create(req ProjectOwnerRequest) (*models.ProjectOwner, error) {
-	projectOwner := models.ProjectOwner{
-		Id: nextProjectownerId,
+	projectOwner := &models.ProjectOwner{
 		Name: req.Name,
 		Creator: req.Creator,
 		Updater: req.Creator,
 		IsDeleted: false,
 	}
 
-	projectOwners = append(projectOwners, projectOwner)
-	nextProjectownerId++
+	if err := s.repo.Create(projectOwner); err != nil {
+		return nil, err
+	}
 
-	return &projectOwner, nil
+	return projectOwner, nil
 }
 
 func (s *ProjectOwnerService) Update(id uint, req ProjectOwnerRequestUpdate) (*models.ProjectOwner, error) {
-	for index, projectOwner := range projectOwners{
-		if projectOwner.Id == id && !projectOwner.IsDeleted {
-			projectOwners[index].Name = req.Name
-			projectOwners[index].Updater = req.Updater
-			return &projectOwners[index], nil
-		}
+	projectOwner, err := s.repo.FindById(id)
+	if err != nil {
+		return nil, errors.New("Project Owner Not Found")
 	}
 
-	return nil, errors.New("Project Owner Not Found")
+	projectOwner.Name = req.Name
+	projectOwner.Updater = req.Updater
+
+	if err := s.repo.Update(projectOwner); err != nil {
+		return nil, err
+	}
+
+	return projectOwner, nil
 }
 
 func (s *ProjectOwnerService) Delete(id uint) error {
-	for index, projectOwner := range projectOwners{
-		if projectOwner.Id == id && !projectOwner.IsDeleted {
-			projectOwners[index].IsDeleted = true
-			return nil
-		}
+	if _, err := s.repo.FindById(id); err != nil {
+		return errors.New("Project Owner Not Found")
 	}
-	
-	return errors.New("Project Owner Not Found")
+
+	return s.repo.Delete(id)
 }
